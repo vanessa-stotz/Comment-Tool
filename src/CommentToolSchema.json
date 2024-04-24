@@ -1,0 +1,34 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "",
+    "title": "Comment Tool",
+    "description": "Text input for the comment tool",
+    "type": "object",
+    "properties": 
+    {
+        "sceneName":
+        {
+            "type": "string",
+            "description": "Name of the scene"
+        },
+        "comments":
+        {
+            "type": "array",
+            "description": "Comments in the scene",
+            "items": {
+            "frame":
+            {
+                "description": "Frame for the string",
+                "type": "integer"
+            },
+            "text":
+            {
+                "description": "Text for the frame",
+                "type": "string"
+            }
+        }
+
+        }
+    },
+    "required": ["sceneName", "comments"]
+}
