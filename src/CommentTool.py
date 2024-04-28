@@ -1,6 +1,13 @@
 import json
 from jsonschema import validate
 
+
+scene = {}
+
+scene["sceneName"] = ""
+scene["comments"] = []
+#comment = {}
+
 class CommentTool:
 
     def __init__(self, name : str) : 
@@ -60,3 +67,34 @@ def readJson():
         print(f"Text: \n    {comments[i]['text']}")
 
     f.close()
+
+
+def addCommentsToScene(frame, text) :
+
+    comment = {}
+
+    print(frame)
+    print(text)
+
+    comment["frame"] = frame
+    comment["text"] = text
+
+    scene["comments"].append(comment)
+
+    length = len(scene["comments"])
+    print(f"length update {length}")
+    content = scene["comments"]
+    print(f"content {content}")
+    print(comment)
+    sortComments()
+
+
+def sortComments():
+
+    print("sorted comments")
+    newList = sorted(scene["comments"], key = lambda x : x['frame'])
+    scene["comments"] = newList
+    print(scene["comments"])
+
+def getSceneDict():
+    return scene

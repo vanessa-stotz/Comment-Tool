@@ -2,9 +2,9 @@
 
 import sys
 
-from PySide2 import QtWidgets, QtCore
+from PySide2 import QtWidgets, QtGui
 
-from CommentTool import writeJson, readJson
+from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict
 
 
 
@@ -21,7 +21,10 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.scene["sceneName"] = ""
         self.scene["comments"] = []
 
-        comments = {}
+        self.comment = {
+                        "frame",
+                        "comments"
+                }
 
 
         super(CommentToolDialog, self).__init__()
@@ -40,6 +43,8 @@ class CommentToolDialog(QtWidgets.QDialog):
         #set Layout
         self.setLayout(self.gridLayout)
 
+        length = len(self.scene["comments"])
+        print(f"length  start {length}")
 
         #readJson()
         #writeJson()
@@ -51,10 +56,10 @@ class CommentToolDialog(QtWidgets.QDialog):
         showTextLayout = QtWidgets.QVBoxLayout()
         showTextGroup.setLayout(showTextLayout)
 
-        showText = QtWidgets.QTextEdit()
-        showText.isReadOnly()
-        showText.setDisabled(True)
-        showTextLayout.addWidget(showText)
+        self.showText = QtWidgets.QTextEdit()
+        self.showText.isReadOnly()
+        self.showText.setDisabled(True)
+        showTextLayout.addWidget(self.showText)
 
 
 
@@ -72,7 +77,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         inputFrameCheckBox = QtWidgets.QCheckBox()
         frameLabel = QtWidgets.QLabel("Frame")
         self.inputFrame = QtWidgets.QLineEdit()
-        #self.inputFrame.setValidator(QtCore.QObject.QIntValidator())
+        self.inputFrame.setValidator(QtGui.QIntValidator(0,50000))
         
         inputFrameCheckBox.setEnabled(True)
         self.inputFrame.setDisabled(True)
@@ -89,20 +94,45 @@ class CommentToolDialog(QtWidgets.QDialog):
         inputTextLayout.addWidget(self.inputText)
         inputTextLayout.addWidget(addTextButton)
         addTextButton.clicked.connect(self.addComment)
+        addTextButton.clicked.connect(self.displayText)
 
 
 
-    def displayText(self):
-        ...
+    # def displayText(self):
+    #     self.scene = getSceneDict()
+    #     for i in self.scene["comments"] :
+    #         frame = f"{['frame']}"
+    #         text = f"{['text']}"
+    #         self.showText.setText(f"Frame {frame}\n")
+    #         self.showText.setText(f"{text}\n")
+    #         self.showText.setText("____________________")
+        
 
 
     def addComment(self):
-        print("new Comment")
-        self.frame = int(self.inputFrame.text())
-        print(self.frame)
 
+        print("new Comment")
+        
+        #if no user input for frame == frame 0
+        if not self.inputFrame.text() :
+            self.frame = 0
+        else :
+            self.frame = int(self.inputFrame.text())
+
+
+        self.text = self.inputText.toPlainText()
+        print(self.frame)
+        print(self.text)
+
+        addCommentsToScene(self.frame, self.text)
 
         
+        #clear input 
+        self.inputText.clear()
+        self.inputFrame.clear()
+
+
+
 
 
 
