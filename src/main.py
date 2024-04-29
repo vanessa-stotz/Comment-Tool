@@ -2,9 +2,9 @@
 
 import sys
 
-from PySide2 import QtWidgets, QtGui
+from PySide2 import QtWidgets, QtGui, QtCore
 
-from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict
+from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment
 
 
 
@@ -25,15 +25,19 @@ class CommentToolDialog(QtWidgets.QDialog):
                         "frame",
                         "comments"
                 }
+        
+        self.rowCount = 0
 
 
         super(CommentToolDialog, self).__init__()
         self.setWindowTitle("Comment Tool")
-        self.resize(800,400)
+        self.resize(800,800)
 
         #grid layout
         self.gridLayout = QtWidgets.QGridLayout()
 
+        #menubar
+        self.menuBar()
         # textfield
         self.showTextLayout()
 
@@ -50,23 +54,55 @@ class CommentToolDialog(QtWidgets.QDialog):
         #writeJson()
 
 
-    def showTextLayout(self):
-        showTextGroup = QtWidgets.QGroupBox("Display Text")
-        self.gridLayout.addWidget(showTextGroup, 0, 0)
-        showTextLayout = QtWidgets.QVBoxLayout()
-        showTextGroup.setLayout(showTextLayout)
+    def resizeEvent(self,size):
+        print("resize")
+        self.showTextTable.resizeRowsToContents()
+        self.showTextTable.resizeColumnsToContents()
 
-        self.showText = QtWidgets.QTextEdit()
-        self.showText.isReadOnly()
-        self.showText.setDisabled(True)
-        showTextLayout.addWidget(self.showText)
+    def menuBar(self) :
+
+        menu = QtWidgets.QMenuBar()
+        menuFile = QtWidgets.QMenu("File")
+        actionExport = QtWidgets.QAction("Save Comments", self)
+        actionImport = QtWidgets.QAction("Load Comments", self)
+
+        actionExport.triggered.connect(self.exportComments)
+        actionImport.triggered.connect(self.importComments)
+
+        menuFile.addAction(actionExport)
+        menuFile.addAction(actionImport)
+
+        menu.addMenu(menuFile)
+        self.gridLayout.addWidget(menu,0,0)
+
+    def showTextLayout(self):
+        showTextScrollArea = QtWidgets.QScrollArea()
+
+
+        self.showTextTable = QtWidgets.QTableWidget()
+        self.showTextTable.setColumnCount(4)
+        self.showTextTable.setRowCount(self.rowCount)
+        self.showTextTable.setHorizontalHeaderLabels(["Frame", "Comment", "", ""])
+        self.showTextTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.showTextTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.showTextTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.showTextTable.verticalHeader().setVisible(False)
+        
+
+        showTextScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        showTextScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        showTextScrollArea.setWidgetResizable(True)
+        showTextScrollArea.setWidget(self.showTextTable)
+        
+        self.gridLayout.addWidget(showTextScrollArea, 1, 0)
+
 
 
 
 
     def inputTextLayout(self):
-        inputTextGroup = QtWidgets.QGroupBox("Input Text")
-        self.gridLayout.addWidget(inputTextGroup, 1, 0)
+        inputTextGroup = QtWidgets.QGroupBox()
+        self.gridLayout.addWidget(inputTextGroup, 2, 0)
         inputTextLayout = QtWidgets.QVBoxLayout()
 
         
@@ -98,14 +134,30 @@ class CommentToolDialog(QtWidgets.QDialog):
 
 
 
-    # def displayText(self):
-    #     self.scene = getSceneDict()
-    #     for i in self.scene["comments"] :
-    #         frame = f"{['frame']}"
-    #         text = f"{['text']}"
-    #         self.showText.setText(f"Frame {frame}\n")
-    #         self.showText.setText(f"{text}\n")
-    #         self.showText.setText("____________________")
+    def displayText(self):
+
+        self.scene = getSceneDict()
+        comments = self.scene['comments']
+        self.showTextTable.setRowCount(len(comments))
+
+
+
+        for i in range (len(comments)) :
+            frame = QtWidgets.QTableWidgetItem(f"{comments[i]['frame']}")
+            text = QtWidgets.QTableWidgetItem(f"{comments[i]['text']}")
+            delete = QtWidgets.QPushButton("delete")
+            edit = QtWidgets.QPushButton("edit")
+
+            self.showTextTable.setItem(i,0, frame)
+            self.showTextTable.setItem(i,1, text)
+            self.showTextTable.setCellWidget(i,2, edit)
+            self.showTextTable.setCellWidget(i,3, delete)
+
+            self.showTextTable.resizeColumnsToContents()
+            self.showTextTable.resizeRowsToContents()
+
+            delete.clicked.connect(self.deleteComment)
+            edit.clicked.connect(self.editComment)
         
 
 
@@ -119,19 +171,54 @@ class CommentToolDialog(QtWidgets.QDialog):
         else :
             self.frame = int(self.inputFrame.text())
 
+        if not self.inputText.toPlainText() :
+            error = QtWidgets.QMessageBox()
+            error.warning(self, "Warning", "No input text. No comment added")
 
-        self.text = self.inputText.toPlainText()
-        print(self.frame)
-        print(self.text)
-
-        addCommentsToScene(self.frame, self.text)
+        else :
+            self.text = self.inputText.toPlainText()
+            print(self.frame)
+            print(self.text)
+            addCommentsToScene(self.frame, self.text)
 
         
-        #clear input 
-        self.inputText.clear()
-        self.inputFrame.clear()
+            #clear input 
+            self.inputText.clear()
+            self.inputFrame.clear()
+            
+
+        
 
 
+    #https://stackoverflow.com/questions/24148968/how-to-add-multiple-qpushbuttons-to-a-qtableview
+    def deleteComment(self):
+        button = self.sender()
+        index = self.showTextTable.indexAt(button.pos())
+        if index.isValid():
+            print(index.row(), index.column())
+            deleteComment(index.row())
+            self.showTextTable.removeRow(index.row())
+
+
+    def editComment(self):
+        button = self.sender()
+        index = self.showTextTable.indexAt(button.pos())
+        if index.isValid():
+            self.inputText.setText((self.scene['comments'][index.row()]['text']))
+            self.inputFrame.setText(str(self.scene['comments'][index.row()]['frame']))
+            deleteComment(index.row())
+            self.showTextTable.removeRow(index.row())
+
+            
+    #endOfCitation
+
+    def exportComments(self):
+        print("Export Comments")
+        writeJson()
+
+    def importComments(self):
+        print("Import Comments")
+        readJson()
 
 
 

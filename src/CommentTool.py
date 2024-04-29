@@ -44,10 +44,10 @@ def writeJson():
     shot010["comments"].append(comments24)
     shot010["comments"].append(comments100)
 
-    validate(instance=shot010, schema=schema)
+    validate(instance=scene, schema=schema)
 
     with open('scene.json', 'w') as f:
-        json.dump(shot010, f, indent=4)
+        json.dump(scene, f, indent=4)
 
     print("Written JSON")
 
@@ -98,3 +98,9 @@ def sortComments():
 
 def getSceneDict():
     return scene
+
+def deleteComment(index):
+    print("delete comment")
+    scene["comments"].pop(index)
+    ...
+    
