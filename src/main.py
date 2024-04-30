@@ -4,7 +4,7 @@ import sys
 
 from PySide2 import QtWidgets, QtGui, QtCore
 
-from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment
+from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearScene
 
 
 
@@ -63,16 +63,20 @@ class CommentToolDialog(QtWidgets.QDialog):
 
         menu = QtWidgets.QMenuBar()
         menuFile = QtWidgets.QMenu("File")
+        menuComments = QtWidgets.QMenu("Comments")
         actionExport = QtWidgets.QAction("Save Comments", self)
         actionImport = QtWidgets.QAction("Load Comments", self)
-
+        actionClear = QtWidgets.QAction("Clear Comments", self)
         actionExport.triggered.connect(self.exportComments)
         actionImport.triggered.connect(self.importComments)
+        actionClear.triggered.connect(self.clearComments)
 
         menuFile.addAction(actionExport)
         menuFile.addAction(actionImport)
+        menuComments.addAction(actionClear)
 
         menu.addMenu(menuFile)
+        menu.addMenu(menuComments)
         self.gridLayout.addWidget(menu,0,0)
 
     def showTextLayout(self):
@@ -135,7 +139,8 @@ class CommentToolDialog(QtWidgets.QDialog):
 
 
     def displayText(self):
-
+        
+        print("DisplayText")
         self.scene = getSceneDict()
         comments = self.scene['comments']
         self.showTextTable.setRowCount(len(comments))
@@ -213,15 +218,31 @@ class CommentToolDialog(QtWidgets.QDialog):
     #endOfCitation
 
     def exportComments(self):
-        print("Export Comments")
-        writeJson()
+        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", "./", "JSON File (*.json)")
+        if fileName[0] != "":
+            if fileName[0].endswith(".json") :
+                print("yes")
+            else :
+                print("no")
+                newName = fileName[0] + ".json"
+            print(newName)
+            writeJson(newName)
+        
+        
+        
 
     def importComments(self):
         print("Import Comments")
-        readJson()
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Select JSON file", "./", "JSON File (*.json)")
+        if fileName[0] != "":
+            readJson(fileName[0])
+            self.displayText()
 
 
-
+    def clearComments(self) :
+        print("Clear Comments")
+        clearScene()
+        self.displayText()
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
