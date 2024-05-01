@@ -3,16 +3,16 @@
 import sys
 
 from PySide2 import QtWidgets, QtGui, QtCore
+import pathlib
 
 from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearScene
-
-
+print(pathlib.Path.cwd())
 
 
 class CommentToolDialog(QtWidgets.QDialog):
     
     def __init__(self, parent = None) :
-
+        
         #variables
         self.frame = 0
         self.text = ""
