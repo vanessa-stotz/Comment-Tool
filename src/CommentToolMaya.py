@@ -58,8 +58,13 @@ class CommentToolDialog(QtWidgets.QDialog):
 
         #menubar
         self.menuBar()
+
         # textfield
         self.showTextLayout()
+
+
+        # jumping between comments
+        self.jumpFramesLayout()
 
         #input text
         self.inputTextLayout()
@@ -72,6 +77,9 @@ class CommentToolDialog(QtWidgets.QDialog):
         #readJson()
         #writeJson()
 
+    def closeEvent(self, event):
+        print("close")
+        self.clearBookmarks()
 
     def resizeEvent(self,size):
         self.showTextTable.resizeRowsToContents()
@@ -110,6 +118,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.showTextTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
         self.showTextTable.verticalHeader().setVisible(False)
         
+        self.showTextTable.clicked.connect(self.jumpToFrame)
 
         showTextScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         showTextScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -119,12 +128,25 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.gridLayout.addWidget(showTextScrollArea, 1, 0)
 
 
+    def jumpFramesLayout(self):
 
+        jumpFramesGroup = QtWidgets.QGroupBox()
+        jumpFramesLay = QtWidgets.QHBoxLayout()
+        previousFrame = QtWidgets.QPushButton("|<")
+        nextFrame = QtWidgets.QPushButton(">|")
+
+        jumpFramesGroup.setLayout(jumpFramesLay)
+        jumpFramesLay.addWidget(previousFrame)
+        jumpFramesLay.addWidget(nextFrame)
+
+        previousFrame.clicked.connect(self.jumpToPreviousFrame)
+        nextFrame.clicked.connect(self.jumpToNextFrame)
+
+        self.gridLayout.addWidget(jumpFramesGroup,2,0)
 
 
     def inputTextLayout(self):
         inputTextGroup = QtWidgets.QGroupBox()
-        self.gridLayout.addWidget(inputTextGroup, 2, 0)
         inputTextLayout = QtWidgets.QVBoxLayout()
 
         
@@ -153,6 +175,8 @@ class CommentToolDialog(QtWidgets.QDialog):
         inputTextLayout.addWidget(addTextButton)
         addTextButton.clicked.connect(self.addComment)
         addTextButton.clicked.connect(self.displayText)
+
+        self.gridLayout.addWidget(inputTextGroup, 3, 0)
 
 
 
@@ -184,7 +208,8 @@ class CommentToolDialog(QtWidgets.QDialog):
 
 
     def addComment(self):
-        
+        #get current frame in maya, so it doesn't jump if comment is written for another comment
+        currentFrame = cmds.currentTime(query = True)
         #if no user input for frame == frame 0
         if not self.inputFrame.text() :
             self.frame = 0
@@ -199,16 +224,12 @@ class CommentToolDialog(QtWidgets.QDialog):
             self.text = self.inputText.toPlainText()
             CommentTool.addCommentsToScene(self.frame, self.text)
 
-            self.addBookmarkKey(self.frame)
+            self.addBookmark(self.frame)
             #clear input 
             self.inputText.clear()
             self.inputFrame.clear()
+            cmds.currentTime(currentFrame, edit = True)
         
-        
-            
-
-        
-
 
     #https://stackoverflow.com/questions/24148968/how-to-add-multiple-qpushbuttons-to-a-qtableview
     def deleteComment(self):
@@ -263,10 +284,11 @@ class CommentToolDialog(QtWidgets.QDialog):
 
 
 
+    #Maya specific functions
 
-    def addBookmarkKey(self, frame):
+    def addBookmark(self, frame):
         print("add Bookmark")
-        bookmark.createBookmark(name = f"Comment_{frame}", start = frame, stop = self.frame, color = (0,1,0))
+        bookmark.createBookmark(name = f"Comment_{frame}", start = frame, stop = frame, color = (0,1,0))
         
     def deleteBookmark(self, frame) :
         bookmark.deleteBookmarkAtTime(time = frame)
@@ -277,11 +299,27 @@ class CommentToolDialog(QtWidgets.QDialog):
 
     def addBookmarkToImport(self) :
         self.clearBookmarks()
-        self.scene  = CommentTool.getSceneDict
+        self.scene  = CommentTool.getSceneDict()
+        
         for comments in self.scene['comments'] :
             print(comments['frame'])
-            #self.addBookmarkKey(comments['frame'])
+            self.addBookmark(comments['frame'])
 
+    def jumpToFrame(self):
+
+        for index in self.showTextTable.selectedIndexes():
+            print(index.row())
+            cmds.currentTime(self.scene['comments'][index.row()]['frame'], edit = True)
+
+    def jumpToPreviousFrame(self):
+        currentTime = cmds.currentTime(query = True)
+        print("previous frame")
+        print(bookmark.selectPreviousBookmarkAtTime(time = currentTime))
+
+    def jumpToNextFrame(self):
+        currentTime = cmds.currentTime(query = True)
+        print("next frame")
+        print(bookmark.selectNextBookmarkAtTime(time = currentTime))
 
 
 if __name__ == "__main__":

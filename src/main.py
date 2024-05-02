@@ -38,6 +38,7 @@ class CommentToolDialog(QtWidgets.QDialog):
 
         #menubar
         self.menuBar()
+
         # textfield
         self.showTextLayout()
 
@@ -102,11 +103,8 @@ class CommentToolDialog(QtWidgets.QDialog):
 
 
 
-
-
     def inputTextLayout(self):
         inputTextGroup = QtWidgets.QGroupBox()
-        self.gridLayout.addWidget(inputTextGroup, 2, 0)
         inputTextLayout = QtWidgets.QVBoxLayout()
 
         
@@ -135,6 +133,8 @@ class CommentToolDialog(QtWidgets.QDialog):
         inputTextLayout.addWidget(addTextButton)
         addTextButton.clicked.connect(self.addComment)
         addTextButton.clicked.connect(self.displayText)
+
+        self.gridLayout.addWidget(inputTextGroup, 3, 0)
 
 
 
@@ -243,6 +243,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         print("Clear Comments")
         clearScene()
         self.displayText()
+
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)

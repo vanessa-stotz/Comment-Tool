@@ -7,7 +7,6 @@ scene = {}
 
 scene["sceneName"] = ""
 scene["comments"] = []
-#comment = {}
 
 class CommentTool:
 
@@ -16,7 +15,7 @@ class CommentTool:
         self.name = name
 
 
-def writeJson(fileName):
+def writeJson(fileName : str):
 
     # with open('CommentToolSchema.json') as f:
     #     schema = json.load(f)
@@ -29,15 +28,14 @@ def writeJson(fileName):
 def readJson(fileName):
     f = open(fileName)
     data = json.load(f)
-    
-    scene["sceneName"] = data['sceneName']
-    scene["comments"] = data['comments']
+
+    overwriteScene(data) 
 
     f.close()
 
 
 
-def addCommentsToScene(frame, text) :
+def addCommentsToScene(frame : int, text : str) :
 
     comment = {}
 
@@ -52,14 +50,17 @@ def addCommentsToScene(frame, text) :
 
 
 def sortComments():
-
     newList = sorted(scene["comments"], key = lambda x : x['frame'])
     scene["comments"] = newList
 
 def getSceneDict():
     return scene
 
-def deleteComment(index):
+def overwriteScene(data : dict):
+    scene["sceneName"] = data['sceneName']
+    scene["comments"] = data['comments']
+
+def deleteComment(index : int):
     scene["comments"].pop(index)
 
 def clearScene():
