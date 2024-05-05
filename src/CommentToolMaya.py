@@ -5,10 +5,10 @@ import importlib, pathlib
 
 from shiboken2 import wrapInstance
 
-import sys, os
+import sys
 
 #need to find a different way to get rid of hard coded path
-sys.path.append("/home/s5602665/PipTD/msccavepipelineandtdproject24-vanessa-stotz/src")
+sys.path.append("//wsl.localhost/Ubuntu/root/PipTD/msccavepipelineandtdproject24-vanessa-stotz/src")
 
 from PySide2 import QtWidgets, QtGui, QtCore
 
@@ -18,7 +18,7 @@ import maya.plugin.timeSliderBookmark.timeSliderBookmark as bookmark
 importlib.reload(bookmark)
 
 import CommentTool
-#importlib.reload(CommentTool)
+importlib.reload(CommentTool)
 #from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearScene
 
 
@@ -256,21 +256,24 @@ class CommentToolDialog(QtWidgets.QDialog):
     #endOfCitation
 
     def exportComments(self):
-        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", "./", "JSON File (*.json)")
+        filePath = cmds.file(q=True, sn=True).rpartition('/')
+        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filepath[0], "JSON File (*.json)")
         if fileName[0] != "":
             if fileName[0].endswith(".json") :
                 print("yes")
+                CommentTool.writeJson(fileName[0])
             else :
                 print("no")
                 newName = fileName[0] + ".json"
-            print(newName)
-            CommentTool.writeJson(newName)
+                print(newName)
+                CommentTool.writeJson(newName)
         
         
         
 
     def importComments(self):
-        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Select JSON file", "./", "JSON File (*.json)")
+        filePath = cmds.file(q=True, sn=True).rpartition('/')
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Select JSON file", filepath[0], "JSON File (*.json)")
         if fileName[0] != "":
             CommentTool.readJson(fileName[0])
             self.displayText()
@@ -331,3 +334,14 @@ if __name__ == "__main__":
    
     commentToolDialog = CommentToolDialog()
     commentToolDialog.show()
+
+
+
+
+
+filepath, parti, filename = cmds.file(q=True, sn=True).rpartition('/')
+#raw_name, extension = os.path.splitext(filename)
+print(filepath)
+print(filename)
+#print(raw_name)
+#print(extension)

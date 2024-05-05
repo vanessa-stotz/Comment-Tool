@@ -16,7 +16,7 @@ class CommentTool:
 
 
 def writeJson(fileName : str):
-
+    scene["sceneName"] = fileName
     # with open('CommentToolSchema.json') as f:
     #     schema = json.load(f)
 
