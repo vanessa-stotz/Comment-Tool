@@ -1,11 +1,12 @@
 #!/usr/bin/env python
 
 import sys
+import vlc
 
-from PySide2 import QtWidgets, QtGui, QtCore
+from PySide2 import QtWidgets, QtGui, QtCore, QtMultimedia, QtMultimediaWidgets
 import pathlib
 
-from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearScene
+from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearComments
 print(pathlib.Path.cwd())
 
 
@@ -34,10 +35,20 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.resize(800,800)
 
         #grid layout
-        self.gridLayout = QtWidgets.QGridLayout()
+        self.mainLayout = QtWidgets.QVBoxLayout()
+        self.gridLayout = QtWidgets.QHBoxLayout()
+        self.commentsLayout = QtWidgets.QVBoxLayout()
+        self.videoLayout = QtWidgets.QVBoxLayout()
+
+        self.menuBar()
+        self.mainLayout.addLayout(self.gridLayout)
+        self.gridLayout.addLayout(self.videoLayout,0)
+        self.gridLayout.addLayout(self.commentsLayout,1)
 
         #menubar
-        self.menuBar()
+        #self.menuBar()
+
+        self.showVideo()
 
         # textfield
         self.showTextLayout()
@@ -46,7 +57,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.inputTextLayout()
 
         #set Layout
-        self.setLayout(self.gridLayout)
+        self.setLayout(self.mainLayout)
 
         length = len(self.scene["comments"])
         print(f"length  start {length}")
@@ -78,7 +89,35 @@ class CommentToolDialog(QtWidgets.QDialog):
 
         menu.addMenu(menuFile)
         menu.addMenu(menuComments)
-        self.gridLayout.addWidget(menu,0,0)
+        self.mainLayout.addWidget(menu)
+
+
+    def showVideo(self):
+
+        vlcInstance = vlc.Instance()
+        mediaplayer = vlcInstance.media_player_new()
+        #mediaplayer.set_hwnd(int(self.frame.winId()))
+        mediaPath = "/home/s5602665/ear_dynamics.mp4"
+        media = vlcInstance.media_new(mediaPath)
+        media.get_mrl()
+        mediaplayer.set_media(media)
+        mediaplayer.play()
+
+        # showVideoGroup = QtWidgets.QGroupBox("video")
+        # showVideoLayout = QtWidgets.QVBoxLayout()
+        # showVideoGroup.setLayout(showVideoLayout)
+
+        # videoWidget = QtMultimediaWidgets.QVideoWidget(self)
+        # videoPlayer = QtMultimedia.QMediaPlayer(self)
+        # #playlist = QtMultimedia.QMediaPlaylist(videoPlayer)
+        # videoPlayer.setMedia(QtCore.QUrl.fromLocalFile("/home/s5602665/Creature_Showcase/200_3D/210_Maya/215_playblasts/www.mov"))
+       
+        # videoPlayer.setVideoOutput(videoWidget)
+        # videoWidget.show()
+        # showVideoLayout.addWidget(videoWidget)
+        # self.videoLayout.addWidget(showVideoGroup)
+
+        # videoPlayer.play()
 
     def showTextLayout(self):
         showTextScrollArea = QtWidgets.QScrollArea()
@@ -99,7 +138,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         showTextScrollArea.setWidgetResizable(True)
         showTextScrollArea.setWidget(self.showTextTable)
         
-        self.gridLayout.addWidget(showTextScrollArea, 1, 0)
+        self.commentsLayout.addWidget(showTextScrollArea)
 
 
 
@@ -134,7 +173,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         addTextButton.clicked.connect(self.addComment)
         addTextButton.clicked.connect(self.displayText)
 
-        self.gridLayout.addWidget(inputTextGroup, 3, 0)
+        self.commentsLayout.addWidget(inputTextGroup)
 
 
 
@@ -220,13 +259,7 @@ class CommentToolDialog(QtWidgets.QDialog):
     def exportComments(self):
         fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", "./", "JSON File (*.json)")
         if fileName[0] != "":
-            if fileName[0].endswith(".json") :
-                print("yes")
-            else :
-                print("no")
-                newName = fileName[0] + ".json"
-            print(newName)
-            writeJson(newName)
+            writeJson(fileName[0])
         
         
         

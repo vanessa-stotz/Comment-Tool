@@ -1,0 +1,13 @@
+{
+    "sceneName": "testFile.json",
+    "comments": [
+        {
+            "frame": 4,
+            "text": "TestFrame4"
+        },
+        {
+            "frame": 5,
+            "text": "Test5"
+        }
+    ]
+}
