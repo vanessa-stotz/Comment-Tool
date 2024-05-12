@@ -48,7 +48,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         #menubar
         #self.menuBar()
 
-        self.showVideo()
+        #self.showVideo()
 
         # textfield
         self.showTextLayout()
@@ -92,53 +92,53 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.mainLayout.addWidget(menu)
 
 
-    def showVideo(self):
+    # def showVideo(self):
 
-        vlcInstance = vlc.Instance()
-        mediaplayer = vlcInstance.media_player_new()
-        #mediaplayer.set_hwnd(int(self.frame.winId()))
-        mediaPath = "/home/s5602665/ear_dynamics.mp4"
-        media = vlcInstance.media_new(mediaPath)
-        media.get_mrl()
-        mediaplayer.set_media(media)
-        mediaplayer.play()
+    #     vlcInstance = vlc.Instance()
+    #     mediaplayer = vlcInstance.media_player_new()
+    #     #mediaplayer.set_hwnd(int(self.frame.winId()))
+    #     mediaPath = "/home/s5602665/ear_dynamics.mp4"
+    #     media = vlcInstance.media_new(mediaPath)
+    #     media.get_mrl()
+    #     mediaplayer.set_media(media)
+    #     mediaplayer.play()
 
-        # showVideoGroup = QtWidgets.QGroupBox("video")
-        # showVideoLayout = QtWidgets.QVBoxLayout()
-        # showVideoGroup.setLayout(showVideoLayout)
+    #     # showVideoGroup = QtWidgets.QGroupBox("video")
+    #     # showVideoLayout = QtWidgets.QVBoxLayout()
+    #     # showVideoGroup.setLayout(showVideoLayout)
 
-        # videoWidget = QtMultimediaWidgets.QVideoWidget(self)
-        # videoPlayer = QtMultimedia.QMediaPlayer(self)
-        # #playlist = QtMultimedia.QMediaPlaylist(videoPlayer)
-        # videoPlayer.setMedia(QtCore.QUrl.fromLocalFile("/home/s5602665/Creature_Showcase/200_3D/210_Maya/215_playblasts/www.mov"))
+    #     # videoWidget = QtMultimediaWidgets.QVideoWidget(self)
+    #     # videoPlayer = QtMultimedia.QMediaPlayer(self)
+    #     # #playlist = QtMultimedia.QMediaPlaylist(videoPlayer)
+    #     # videoPlayer.setMedia(QtCore.QUrl.fromLocalFile("/home/s5602665/Creature_Showcase/200_3D/210_Maya/215_playblasts/www.mov"))
        
-        # videoPlayer.setVideoOutput(videoWidget)
-        # videoWidget.show()
-        # showVideoLayout.addWidget(videoWidget)
-        # self.videoLayout.addWidget(showVideoGroup)
+    #     # videoPlayer.setVideoOutput(videoWidget)
+    #     # videoWidget.show()
+    #     # showVideoLayout.addWidget(videoWidget)
+    #     # self.videoLayout.addWidget(showVideoGroup)
 
-        # videoPlayer.play()
+    #     # videoPlayer.play()
 
-    def showTextLayout(self):
-        showTextScrollArea = QtWidgets.QScrollArea()
+    # def showTextLayout(self):
+    #     showTextScrollArea = QtWidgets.QScrollArea()
 
 
-        self.showTextTable = QtWidgets.QTableWidget()
-        self.showTextTable.setColumnCount(4)
-        self.showTextTable.setRowCount(self.rowCount)
-        self.showTextTable.setHorizontalHeaderLabels(["Frame", "Comment", "", ""])
-        self.showTextTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-        self.showTextTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-        self.showTextTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-        self.showTextTable.verticalHeader().setVisible(False)
+    #     self.showTextTable = QtWidgets.QTableWidget()
+    #     self.showTextTable.setColumnCount(4)
+    #     self.showTextTable.setRowCount(self.rowCount)
+    #     self.showTextTable.setHorizontalHeaderLabels(["Frame", "Comment", "", ""])
+    #     self.showTextTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+    #     self.showTextTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+    #     self.showTextTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+    #     self.showTextTable.verticalHeader().setVisible(False)
         
 
-        showTextScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        showTextScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        showTextScrollArea.setWidgetResizable(True)
-        showTextScrollArea.setWidget(self.showTextTable)
+    #     showTextScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+    #     showTextScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+    #     showTextScrollArea.setWidgetResizable(True)
+    #     showTextScrollArea.setWidget(self.showTextTable)
         
-        self.commentsLayout.addWidget(showTextScrollArea)
+    #     self.commentsLayout.addWidget(showTextScrollArea)
 
 
 
