@@ -130,6 +130,10 @@ class TestCommentTool(unittest.TestCase):
         ...
 
 
+    def test_createFolder(self):
+        ...
+
+
     def test_writeAndReadFile(self):
 
         CommentTool.addCommentsToScene(4, "TestFrame4")

@@ -1,17 +1,17 @@
 import maya.api.OpenMaya as OpenMaya
 import maya.api.OpenMayaUI as OpenMayaUI
+import maya.OpenMayaUI as OpenMayaUI1
 import maya.cmds as cmds
 import importlib, pathlib
+from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 
 from shiboken2 import wrapInstance
 
-import sys
-
-#need to find a different way to get rid of hard coded path
-sys.path.append("/home/s5602665/PipTD/msccavepipelineandtdproject24-vanessa-stotz/src")
-
 from PySide2 import QtWidgets, QtGui, QtCore
 
+
+# if (cmds.pluginInfo*'timeSliderBookmark', q = true, loaded = True) :
+#     cmds.unloadPlugin('timeSliderBookmark')
 
 cmds.loadPlugin('timeSliderBookmark')
 import maya.plugin.timeSliderBookmark.timeSliderBookmark as bookmark
@@ -19,17 +19,18 @@ importlib.reload(bookmark)
 
 import CommentTool
 importlib.reload(CommentTool)
+
 #from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearScene
 
 
 def getMainWindow():
-    window = maya.OpenMayaUI.MQtUtil.mainWindow()
+    window = OpenMayaUI1.MQtUtil.mainWindow()
     return wrapInstance(int(window),QtWidgets.QDialog)
 
-class CommentToolDialog(QtWidgets.QDialog):
+class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     
     def __init__(self, parent = getMainWindow()) :
-        super().__init__(parent)
+        super(CommentToolDialog, self).__init__()
 
         #variables
         self.frame = 0
@@ -257,9 +258,9 @@ class CommentToolDialog(QtWidgets.QDialog):
 
     def exportComments(self):
         filePath = cmds.file(q=True, sn=True).rpartition('/')
-        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
-        if fileName[0] != "":
-            CommentTool.writeJson(fileName[0])
+        #fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
+        #if fileName[0] != "":
+        CommentTool.writeJson(filePath[0])
 
         
         

@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
 import sys
-import vlc
+import os
 
-from PySide2 import QtWidgets, QtGui, QtCore, QtMultimedia, QtMultimediaWidgets
+from PySide2 import QtWidgets, QtGui, QtCore
 import pathlib
 
 from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearComments
-print(pathlib.Path.cwd())
 
 
 class CommentToolDialog(QtWidgets.QDialog):
@@ -35,20 +34,9 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.resize(800,800)
 
         #grid layout
-        self.mainLayout = QtWidgets.QVBoxLayout()
-        self.gridLayout = QtWidgets.QHBoxLayout()
-        self.commentsLayout = QtWidgets.QVBoxLayout()
-        self.videoLayout = QtWidgets.QVBoxLayout()
+        self.gridLayout = QtWidgets.QGridLayout()
 
         self.menuBar()
-        self.mainLayout.addLayout(self.gridLayout)
-        self.gridLayout.addLayout(self.videoLayout,0)
-        self.gridLayout.addLayout(self.commentsLayout,1)
-
-        #menubar
-        #self.menuBar()
-
-        #self.showVideo()
 
         # textfield
         self.showTextLayout()
@@ -57,13 +45,10 @@ class CommentToolDialog(QtWidgets.QDialog):
         self.inputTextLayout()
 
         #set Layout
-        self.setLayout(self.mainLayout)
+        self.setLayout(self.gridLayout)
 
         length = len(self.scene["comments"])
         print(f"length  start {length}")
-
-        #readJson()
-        #writeJson()
 
 
     def resizeEvent(self,size):
@@ -76,69 +61,73 @@ class CommentToolDialog(QtWidgets.QDialog):
         menu = QtWidgets.QMenuBar()
         menuFile = QtWidgets.QMenu("File")
         menuComments = QtWidgets.QMenu("Comments")
+        actionOpenVLC = QtWidgets.QAction("Open VLC", self)
         actionExport = QtWidgets.QAction("Save Comments", self)
         actionImport = QtWidgets.QAction("Load Comments", self)
         actionClear = QtWidgets.QAction("Clear Comments", self)
+
+        actionOpenVLC.triggered.connect(self.openVLC)
         actionExport.triggered.connect(self.exportComments)
         actionImport.triggered.connect(self.importComments)
         actionClear.triggered.connect(self.clearComments)
 
+        menuFile.addAction(actionOpenVLC)
         menuFile.addAction(actionExport)
         menuFile.addAction(actionImport)
         menuComments.addAction(actionClear)
 
         menu.addMenu(menuFile)
         menu.addMenu(menuComments)
-        self.mainLayout.addWidget(menu)
+        self.gridLayout.addWidget(menu, 0, 0)
 
 
-    # def showVideo(self):
+    def showVideo(self):
+        ...
+        # vlcInstance = vlc.Instance()
+        # mediaplayer = vlcInstance.media_player_new()
+        # #mediaplayer.set_hwnd(int(self.frame.winId()))
+        # mediaPath = "/home/s5602665/ear_dynamics.mp4"
+        # media = vlcInstance.media_new(mediaPath)
+        # media.get_mrl()
+        # mediaplayer.set_media(media)
+        # mediaplayer.play()
 
-    #     vlcInstance = vlc.Instance()
-    #     mediaplayer = vlcInstance.media_player_new()
-    #     #mediaplayer.set_hwnd(int(self.frame.winId()))
-    #     mediaPath = "/home/s5602665/ear_dynamics.mp4"
-    #     media = vlcInstance.media_new(mediaPath)
-    #     media.get_mrl()
-    #     mediaplayer.set_media(media)
-    #     mediaplayer.play()
+        # showVideoGroup = QtWidgets.QGroupBox("video")
+        # showVideoLayout = QtWidgets.QVBoxLayout()
+        # showVideoGroup.setLayout(showVideoLayout)
 
-    #     # showVideoGroup = QtWidgets.QGroupBox("video")
-    #     # showVideoLayout = QtWidgets.QVBoxLayout()
-    #     # showVideoGroup.setLayout(showVideoLayout)
-
-    #     # videoWidget = QtMultimediaWidgets.QVideoWidget(self)
-    #     # videoPlayer = QtMultimedia.QMediaPlayer(self)
-    #     # #playlist = QtMultimedia.QMediaPlaylist(videoPlayer)
-    #     # videoPlayer.setMedia(QtCore.QUrl.fromLocalFile("/home/s5602665/Creature_Showcase/200_3D/210_Maya/215_playblasts/www.mov"))
+        # videoWidget = QtMultimediaWidgets.QVideoWidget(self)
+        # videoPlayer = QtMultimedia.QMediaPlayer(self)
+        # #playlist = QtMultimedia.QMediaPlaylist(videoPlayer)
+        # videoPlayer.setMedia(QtCore.QUrl.fromLocalFile("/home/s5602665/Creature_Showcase/200_3D/210_Maya/215_playblasts/www.mov"))
        
-    #     # videoPlayer.setVideoOutput(videoWidget)
-    #     # videoWidget.show()
-    #     # showVideoLayout.addWidget(videoWidget)
-    #     # self.videoLayout.addWidget(showVideoGroup)
+        # videoPlayer.setVideoOutput(videoWidget)
+        # videoWidget.show()
+        # showVideoLayout.addWidget(videoWidget)
+        # self.videoLayout.addWidget(showVideoGroup)
 
-    #     # videoPlayer.play()
+        # videoPlayer.play()
 
-    # def showTextLayout(self):
-    #     showTextScrollArea = QtWidgets.QScrollArea()
+    def showTextLayout(self):
+        showTextScrollArea = QtWidgets.QScrollArea()
 
 
-    #     self.showTextTable = QtWidgets.QTableWidget()
-    #     self.showTextTable.setColumnCount(4)
-    #     self.showTextTable.setRowCount(self.rowCount)
-    #     self.showTextTable.setHorizontalHeaderLabels(["Frame", "Comment", "", ""])
-    #     self.showTextTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
-    #     self.showTextTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
-    #     self.showTextTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
-    #     self.showTextTable.verticalHeader().setVisible(False)
+        self.showTextTable = QtWidgets.QTableWidget()
+        self.showTextTable.setColumnCount(4)
+        self.showTextTable.setRowCount(self.rowCount)
+        self.showTextTable.setHorizontalHeaderLabels(["Frame", "Comment", "", ""])
+        self.showTextTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
+        self.showTextTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
+        self.showTextTable.setEditTriggers(QtWidgets.QTableWidget.NoEditTriggers)
+        self.showTextTable.verticalHeader().setVisible(False)
         
 
-    #     showTextScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-    #     showTextScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-    #     showTextScrollArea.setWidgetResizable(True)
-    #     showTextScrollArea.setWidget(self.showTextTable)
+        showTextScrollArea.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        showTextScrollArea.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        showTextScrollArea.setWidgetResizable(True)
+        showTextScrollArea.setWidget(self.showTextTable)
         
-    #     self.commentsLayout.addWidget(showTextScrollArea)
+        self.gridLayout.addWidget(showTextScrollArea, 1, 0)
 
 
 
@@ -173,7 +162,7 @@ class CommentToolDialog(QtWidgets.QDialog):
         addTextButton.clicked.connect(self.addComment)
         addTextButton.clicked.connect(self.displayText)
 
-        self.commentsLayout.addWidget(inputTextGroup)
+        self.gridLayout.addWidget(inputTextGroup, 3, 0)
 
 
 
@@ -203,6 +192,10 @@ class CommentToolDialog(QtWidgets.QDialog):
             delete.clicked.connect(self.deleteComment)
             edit.clicked.connect(self.editComment)
         
+
+    def openVLC(self):
+        print("open VLC")
+        os.system('/usr/bin/vlc')
 
 
     def addComment(self):

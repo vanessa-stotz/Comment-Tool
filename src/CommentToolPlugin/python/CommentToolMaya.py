@@ -4,6 +4,7 @@ import maya.OpenMayaUI as OpenMayaUI1
 import maya.cmds as cmds
 import importlib, pathlib
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
+import maya.mel as mel
 
 from shiboken2 import wrapInstance
 
@@ -91,15 +92,26 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         menu = QtWidgets.QMenuBar()
         menuFile = QtWidgets.QMenu("File")
         menuComments = QtWidgets.QMenu("Comments")
-        actionExport = QtWidgets.QAction("Save Comments", self)
+        actionExportBoth = QtWidgets.QAction("Export Comments and Video", self)
+        actionExportComments = QtWidgets.QAction("Export Comments", self)
+        actionExportVideo = QtWidgets.QAction("Export Video", self)
         actionImport = QtWidgets.QAction("Load Comments", self)
         actionClear = QtWidgets.QAction("Clear Comments", self)
-        actionExport.triggered.connect(self.exportComments)
+
+
+        actionExportBoth.triggered.connect(self.exportComments)
+        actionExportBoth.triggered.connect(self.exportVideo)
+        actionExportComments.triggered.connect(self.exportComments)
+        actionExportVideo.triggered.connect(self.exportVideo)
         actionImport.triggered.connect(self.importComments)
         actionClear.triggered.connect(self.clearComments)
 
-        menuFile.addAction(actionExport)
+        menuFile.addAction(actionExportBoth)
+        menuFile.addAction(actionExportComments)
+        menuFile.addAction(actionExportVideo)
+        menuFile.addSeparator()
         menuFile.addAction(actionImport)
+
         menuComments.addAction(actionClear)
 
         menu.addMenu(menuFile)
@@ -258,12 +270,25 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def exportComments(self):
         filePath = cmds.file(q=True, sn=True).rpartition('/')
-        fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
-        if fileName[0] != "":
-            CommentTool.writeJson(fileName[0])
+        ##fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
+        ##if fileName[0] != "":
+        CommentTool.writeJson(filePath)
 
+    def exportVideo(self):
+        filePath = cmds.file(q=True, sn=True).rpartition('/')
         
-        
+        #get the path to the comment Folder
+        pathdir = CommentTool.getFolderPath(filePath[0])
+        print(pathdir)
+        name = filePath[2].rpartition('.')
+        fileName = name[0] + ".mov"
+        #show frame count
+        mel.eval('setCurrentFrameVisibility(!`optionVar -q currentFrameVisibility`);')
+        #hide framecount
+        #export playblast
+        cmds.playblast(format = "qt", filename = (str(pathdir) + fileName), fp = 4, percent =100, compression = "jpeg", quality = 100, width = 1920, height = 1080, fo=1, v = 0)
+        print("video")
+        mel.eval('setCurrentFrameVisibility(!`optionVar -q currentFrameVisibility`);')
         
 
     def importComments(self):

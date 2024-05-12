@@ -1,4 +1,6 @@
 import json
+import os
+import pathlib
 #import jsonschema
 #from jsonschema import validate
 
@@ -15,20 +17,32 @@ class CommentTool:
         self.name = name
 
 
-def writeJson(fileName : str):
+def writeJson(path : str):
 
-    if not(fileName.endswith(".json")) :
-        fileName = fileName + ".json"
-    
-    scene["sceneName"] = fileName
-
+    pathDir = createFolder(path[0])
+    name = path[2].rpartition('.')
+    fileName = name[0] + ".json"
+    scene["sceneName"] = path[2]
     # with open('CommentToolSchema.json') as f:
     #     schema = json.load(f)
 
     # validate(instance=scene, schema=schema)
-
-    with open(fileName, 'w') as f:
+    with open(pathlib.Path.joinpath(pathDir, fileName), 'w') as f:
         json.dump(scene, f, indent=4)
+
+
+
+def getFolderPath(path):
+    pathNew = pathlib.Path(path)
+    pathDir = pathlib.Path.joinpath(pathNew, "Comments")
+
+    if pathDir.is_dir():
+        print("Folder exists")
+    else:
+        print("createFolder")
+        os.mkdir(pathDir)
+    return pathDir
+    
 
 def readJson(fileName : str):
     f = open(fileName)
