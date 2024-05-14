@@ -5,6 +5,7 @@ import os
 
 from PySide2 import QtWidgets, QtGui, QtCore
 import pathlib
+import subprocess
 
 from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearComments
 
@@ -50,6 +51,9 @@ class CommentToolDialog(QtWidgets.QDialog):
         length = len(self.scene["comments"])
         print(f"length  start {length}")
 
+    def closeEvent(self, event):
+        print("closeEvent")
+        self.closeVideo()
 
     def resizeEvent(self,size):
         print("resize")
@@ -61,52 +65,29 @@ class CommentToolDialog(QtWidgets.QDialog):
         menu = QtWidgets.QMenuBar()
         menuFile = QtWidgets.QMenu("File")
         menuComments = QtWidgets.QMenu("Comments")
-        actionOpenVLC = QtWidgets.QAction("Open VLC", self)
+        menuVideo = QtWidgets.QMenu("Video")
+
         actionExport = QtWidgets.QAction("Save Comments", self)
         actionImport = QtWidgets.QAction("Load Comments", self)
         actionClear = QtWidgets.QAction("Clear Comments", self)
 
-        actionOpenVLC.triggered.connect(self.openVLC)
+        actionOpenVideo = QtWidgets.QAction("Open Video", self)
+
+        actionOpenVideo.triggered.connect(self.openVideo)
         actionExport.triggered.connect(self.exportComments)
         actionImport.triggered.connect(self.importComments)
         actionClear.triggered.connect(self.clearComments)
 
-        menuFile.addAction(actionOpenVLC)
+        
         menuFile.addAction(actionExport)
         menuFile.addAction(actionImport)
         menuComments.addAction(actionClear)
+        menuVideo.addAction(actionOpenVideo)
 
         menu.addMenu(menuFile)
         menu.addMenu(menuComments)
+        menu.addMenu(menuVideo)
         self.gridLayout.addWidget(menu, 0, 0)
-
-
-    def showVideo(self):
-        ...
-        # vlcInstance = vlc.Instance()
-        # mediaplayer = vlcInstance.media_player_new()
-        # #mediaplayer.set_hwnd(int(self.frame.winId()))
-        # mediaPath = "/home/s5602665/ear_dynamics.mp4"
-        # media = vlcInstance.media_new(mediaPath)
-        # media.get_mrl()
-        # mediaplayer.set_media(media)
-        # mediaplayer.play()
-
-        # showVideoGroup = QtWidgets.QGroupBox("video")
-        # showVideoLayout = QtWidgets.QVBoxLayout()
-        # showVideoGroup.setLayout(showVideoLayout)
-
-        # videoWidget = QtMultimediaWidgets.QVideoWidget(self)
-        # videoPlayer = QtMultimedia.QMediaPlayer(self)
-        # #playlist = QtMultimedia.QMediaPlaylist(videoPlayer)
-        # videoPlayer.setMedia(QtCore.QUrl.fromLocalFile("/home/s5602665/Creature_Showcase/200_3D/210_Maya/215_playblasts/www.mov"))
-       
-        # videoPlayer.setVideoOutput(videoWidget)
-        # videoWidget.show()
-        # showVideoLayout.addWidget(videoWidget)
-        # self.videoLayout.addWidget(showVideoGroup)
-
-        # videoPlayer.play()
 
     def showTextLayout(self):
         showTextScrollArea = QtWidgets.QScrollArea()
@@ -193,10 +174,40 @@ class CommentToolDialog(QtWidgets.QDialog):
             edit.clicked.connect(self.editComment)
         
 
-    def openVLC(self):
+    def openVideo(self):
         print("open VLC")
-        os.system('/usr/bin/vlc')
+        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Save JSON file", "./", "*.mov *.mp4")
+        #CommentToolVideo.openVideo(fileName)
+        file = str(fileName[0])
+        self.loadVideo(file)
+        
 
+    def loadVideofromStartUp(self, path):
+        filePath = path.rpartition('.')
+        print(filePath)
+        movPath = str(filePath[0]) + ".mov"
+        if pathlib.Path(movPath).exists():
+    
+            loadJsonBox = QtWidgets.QMessageBox()
+            loadJsonBox.setText("Video found")
+            loadJsonBox.setInformativeText("Do you want to load it?")
+            buttonYes = QtWidgets.QMessageBox.Yes
+            buttonNo = QtWidgets.QMessageBox.No
+            loadJsonBox.setStandardButtons(buttonYes|buttonNo)
+            boxValue = loadJsonBox.exec_()
+            if (boxValue == buttonYes):
+                self.loadVideo(movPath)
+
+
+    def loadVideo(self, movPath):
+        process = QtCore.QProcess()
+        filePath = str(movPath)
+        print(filePath)
+        process.startDetached(f"/usr/bin/vlc {str(movPath)}")
+
+
+    def closeVideo(self):
+        subprocess.run(["pkill", "vlc"])
 
     def addComment(self):
 
@@ -260,19 +271,15 @@ class CommentToolDialog(QtWidgets.QDialog):
     def importComments(self):
         print("Import Comments")
         fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Select JSON file", "./", "JSON File (*.json)")
+        print(fileName)
+        neName = str(fileName[0])
         if fileName[0] != "":
             readJson(fileName[0])
             self.displayText()
+        self.loadVideofromStartUp(neName)
 
 
     def clearComments(self) :
         print("Clear Comments")
-        clearScene()
+        clearComments()
         self.displayText()
-
-
-if __name__ == "__main__":
-    app = QtWidgets.QApplication(sys.argv)
-    dialog = CommentToolDialog()
-    dialog.show()
-    sys.exit(app.exec_())

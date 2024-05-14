@@ -32,7 +32,7 @@ def writeJson(path : str):
 
 
 
-def getFolderPath(path):
+def getFolderPath(path : Path):
     pathNew = pathlib.Path(path)
     pathDir = pathlib.Path.joinpath(pathNew, "Comments")
 

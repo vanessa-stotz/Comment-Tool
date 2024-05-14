@@ -5,6 +5,7 @@ import maya.cmds as cmds
 import importlib, pathlib
 from maya.app.general.mayaMixin import MayaQWidgetDockableMixin
 import maya.mel as mel
+import os
 
 from shiboken2 import wrapInstance
 
@@ -83,6 +84,10 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         print("close")
         self.clearBookmarks()
 
+    def showEvent(self, event):
+        print("open")
+        self.findComments()
+
     def resizeEvent(self,size):
         self.showTextTable.resizeRowsToContents()
         self.showTextTable.resizeColumnsToContents()
@@ -92,12 +97,13 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         menu = QtWidgets.QMenuBar()
         menuFile = QtWidgets.QMenu("File")
         menuComments = QtWidgets.QMenu("Comments")
+        menuExternal = QtWidgets.QMenu("External")
         actionExportBoth = QtWidgets.QAction("Export Comments and Video", self)
         actionExportComments = QtWidgets.QAction("Export Comments", self)
         actionExportVideo = QtWidgets.QAction("Export Video", self)
         actionImport = QtWidgets.QAction("Load Comments", self)
         actionClear = QtWidgets.QAction("Clear Comments", self)
-
+        actionExternal = QtWidgets.QAction("Open External Program", self)
 
         actionExportBoth.triggered.connect(self.exportComments)
         actionExportBoth.triggered.connect(self.exportVideo)
@@ -105,6 +111,7 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         actionExportVideo.triggered.connect(self.exportVideo)
         actionImport.triggered.connect(self.importComments)
         actionClear.triggered.connect(self.clearComments)
+        actionExternal.triggered.connect(self.openExternal)
 
         menuFile.addAction(actionExportBoth)
         menuFile.addAction(actionExportComments)
@@ -114,8 +121,11 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         menuComments.addAction(actionClear)
 
+        menuExternal.addAction(actionExternal)
+
         menu.addMenu(menuFile)
         menu.addMenu(menuComments)
+        menu.addMenu(menuExternal)
         self.gridLayout.addWidget(menu,0,0)
 
     def showTextLayout(self):
@@ -269,27 +279,70 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     #endOfCitation
 
     def exportComments(self):
-        filePath = cmds.file(q=True, sn=True).rpartition('/')
+        filePath = self.getFilePath()
         ##fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
         ##if fileName[0] != "":
         CommentTool.writeJson(filePath)
 
     def exportVideo(self):
-        filePath = cmds.file(q=True, sn=True).rpartition('/')
+        filePath = self.getFilePath()
         
         #get the path to the comment Folder
         pathdir = CommentTool.getFolderPath(filePath[0])
         print(pathdir)
+
         name = filePath[2].rpartition('.')
         fileName = name[0] + ".mov"
         #show frame count
+        fileNew = pathlib.Path.joinpath(pathdir, fileName)
         mel.eval('setCurrentFrameVisibility(!`optionVar -q currentFrameVisibility`);')
         #hide framecount
         #export playblast
-        cmds.playblast(format = "qt", filename = (str(pathdir) + fileName), fp = 4, percent =100, compression = "jpeg", quality = 100, width = 1920, height = 1080, fo=1, v = 0)
+        cmds.playblast(format = "qt", filename = str(fileNew), fp = 4, percent =100, compression = "jpeg", quality = 100, width = 1920, height = 1080, fo=1, v = 0)
         print("video")
         mel.eval('setCurrentFrameVisibility(!`optionVar -q currentFrameVisibility`);')
         
+
+    def findComments(self):
+        print("findComments")
+        filePath = self.getFilePath()
+        pathNew = pathlib.Path(filePath[0])
+        folderDir = pathlib.Path.joinpath(pathNew, "Comments")
+        print(folderDir)
+        if folderDir.is_dir():
+            print("Folder exists")
+            files = os.listdir(folderDir)
+            print(len(files))
+            for file in files:
+                if file.endswith(".json"):
+                    print("is json")
+                    fileDir = pathlib.Path.joinpath(folderDir, file)
+                    CommentTool.readJson(fileDir)
+                    self.scene = CommentTool.getSceneDict()
+                    #check if the scenename is the same
+                    if(self.scene["sceneName"]== filePath[2]):
+                        print("same sceneName")
+
+                        loadJsonBox = QtWidgets.QMessageBox()
+                        loadJsonBox.setWindowTitle("Comments found")
+                        loadJsonBox.setText("Do you want to load them?")
+                        buttonYes = QtWidgets.QMessageBox.Yes
+                        buttonNo = QtWidgets.QMessageBox.No
+                        loadJsonBox.setStandardButtons(buttonYes|buttonNo)
+                        boxValue = loadJsonBox.exec_()
+                        if (boxValue == QtWidgets.QMessageBox.Yes):
+                            print("load JSon")
+                            CommentTool.readJson(fileDir)
+                            self.displayText()
+                            self.addBookmarkToImport()
+                            break
+                        else :
+                            print("no")
+        
+
+    def getFilePath(self):
+        return cmds.file(q=True, sn=True).rpartition('/')
+
 
     def importComments(self):
         filePath = cmds.file(q=True, sn=True).rpartition('/')
@@ -305,7 +358,11 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         self.clearBookmarks()
         self.displayText()
 
-
+    def openExternal(self):
+        process = QtCore.QProcess()
+        # how to do that ???
+        process.startDetached(f"/home/s5602665/PipTD/msccavepipelineandtdproject24-vanessa-stotz/src/dist/CommentToolExec/CommentToolExec")
+        
 
     #Maya specific functions
 

@@ -19,7 +19,7 @@ class CommentTool:
 
 def writeJson(path : str):
 
-    pathDir = createFolder(path[0])
+    pathDir = getFolderPath(path[0])
     name = path[2].rpartition('.')
     fileName = name[0] + ".json"
     scene["sceneName"] = path[2]
