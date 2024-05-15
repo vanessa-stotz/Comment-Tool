@@ -12,8 +12,8 @@ from shiboken2 import wrapInstance
 from PySide2 import QtWidgets, QtGui, QtCore
 
 
-# if (cmds.pluginInfo*'timeSliderBookmark', q = true, loaded = True) :
-#     cmds.unloadPlugin('timeSliderBookmark')
+if (cmds.pluginInfo('timeSliderBookmark', q = True, loaded = True)) :
+     cmds.unloadPlugin('timeSliderBookmark')
 
 cmds.loadPlugin('timeSliderBookmark')
 import maya.plugin.timeSliderBookmark.timeSliderBookmark as bookmark
@@ -22,7 +22,7 @@ importlib.reload(bookmark)
 import CommentTool
 importlib.reload(CommentTool)
 
-#from CommentTool import writeJson, readJson, addCommentsToScene, getSceneDict, deleteComment, clearScene
+#from CommentTool import writeJson, readJson, addCommentsToScene, getSceneData, deleteComment, clearScene
 
 
 def getMainWindow():
@@ -47,7 +47,8 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                         "comments"
                 }
         
-        self.rowCount = 0
+        #self.jsonDir  = ""
+
 
         importlib.reload(bookmark)
         importlib.reload(CommentTool)
@@ -98,10 +99,10 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         menuFile = QtWidgets.QMenu("File")
         menuComments = QtWidgets.QMenu("Comments")
         menuExternal = QtWidgets.QMenu("External")
-        actionExportBoth = QtWidgets.QAction("Export Comments and Video", self)
-        actionExportComments = QtWidgets.QAction("Export Comments", self)
         actionExportVideo = QtWidgets.QAction("Export Video", self)
-        actionImport = QtWidgets.QAction("Load Comments", self)
+        actionExportComments = QtWidgets.QAction("Export Comments", self)
+        actionExportBoth = QtWidgets.QAction("Export Comments and Video", self)
+        actionReload = QtWidgets.QAction("Reload Comments", self)
         actionClear = QtWidgets.QAction("Clear Comments", self)
         actionExternal = QtWidgets.QAction("Open External Program", self)
 
@@ -109,16 +110,15 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         actionExportBoth.triggered.connect(self.exportVideo)
         actionExportComments.triggered.connect(self.exportComments)
         actionExportVideo.triggered.connect(self.exportVideo)
-        actionImport.triggered.connect(self.importComments)
+        actionReload.triggered.connect(self.reloadComments)
         actionClear.triggered.connect(self.clearComments)
         actionExternal.triggered.connect(self.openExternal)
 
-        menuFile.addAction(actionExportBoth)
-        menuFile.addAction(actionExportComments)
         menuFile.addAction(actionExportVideo)
-        menuFile.addSeparator()
-        menuFile.addAction(actionImport)
-
+        menuFile.addAction(actionExportComments)
+        menuFile.addAction(actionExportBoth)
+        
+        menuComments.addAction(actionReload)
         menuComments.addAction(actionClear)
 
         menuExternal.addAction(actionExternal)
@@ -134,7 +134,7 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
         self.showTextTable = QtWidgets.QTableWidget()
         self.showTextTable.setColumnCount(4)
-        self.showTextTable.setRowCount(self.rowCount)
+        self.showTextTable.setRowCount(0)
         self.showTextTable.setHorizontalHeaderLabels(["Frame", "Comment", "", ""])
         self.showTextTable.horizontalHeader().setSectionResizeMode(QtWidgets.QHeaderView.Stretch)
         self.showTextTable.setSizeAdjustPolicy(QtWidgets.QAbstractScrollArea.AdjustToContents)
@@ -204,8 +204,8 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
 
     def displayText(self):
-        
-        self.scene = CommentTool.getSceneDict()
+        print("displayText")
+        self.scene = CommentTool.getSceneData()
         comments = self.scene['comments']
         self.showTextTable.setRowCount(len(comments))
 
@@ -280,17 +280,19 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def exportComments(self):
         filePath = self.getFilePath()
-        ##fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
-        ##if fileName[0] != "":
-        CommentTool.writeJson(filePath)
+        print(filePath)
+        #fileName = QtWidgets.QFileDialog.getSaveFileName(self, "Save JSON file", filePath[0], "JSON File (*.json)")
+        #if fileName[0] != "":
+        CommentTool.exportCommentsFromMayaAPI(filePath)
 
     def exportVideo(self):
+        #get the path to the folder of the maya scene
         filePath = self.getFilePath()
-        
-        #get the path to the comment Folder
-        pathdir = CommentTool.getFolderPath(filePath[0])
+        print(filePath)
+        #get the path of the comment folder
+        pathdir = CommentTool.getFolderPath(filePath)
+        print("PathDir")
         print(pathdir)
-
         name = filePath[2].rpartition('.')
         fileName = name[0] + ".mov"
         #show frame count
@@ -306,23 +308,26 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
     def findComments(self):
         print("findComments")
         filePath = self.getFilePath()
-        pathNew = pathlib.Path(filePath[0])
-        folderDir = pathlib.Path.joinpath(pathNew, "Comments")
+        mayaFilePath = pathlib.Path(filePath[0])
+        print(mayaFilePath)
+        mayaRoot = filePath[2].rpartition('.')
+        print(mayaRoot[0])
+        folderDir = pathlib.Path.joinpath(mayaFilePath, "Comments")
         print(folderDir)
         if folderDir.is_dir():
-            print("Folder exists")
-            files = os.listdir(folderDir)
-            print(len(files))
-            for file in files:
-                if file.endswith(".json"):
-                    print("is json")
-                    fileDir = pathlib.Path.joinpath(folderDir, file)
-                    CommentTool.readJson(fileDir)
-                    self.scene = CommentTool.getSceneDict()
-                    #check if the scenename is the same
-                    if(self.scene["sceneName"]== filePath[2]):
+            folderDir = pathlib.Path.joinpath(folderDir, mayaRoot[0])
+            print(folderDir)   
+            if folderDir.is_dir():
+                print("Folder exists")
+                files = os.listdir(folderDir)
+                print(files)
+                print(len(files))
+                for file in files:
+                    if file.endswith(".json"):
+                        print("is json")
+                        jsonDir = pathlib.Path.joinpath(folderDir, file)
+                        print(jsonDir)
                         print("same sceneName")
-
                         loadJsonBox = QtWidgets.QMessageBox()
                         loadJsonBox.setWindowTitle("Comments found")
                         loadJsonBox.setText("Do you want to load them?")
@@ -332,25 +337,54 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
                         boxValue = loadJsonBox.exec_()
                         if (boxValue == QtWidgets.QMessageBox.Yes):
                             print("load JSon")
-                            CommentTool.readJson(fileDir)
-                            self.displayText()
-                            self.addBookmarkToImport()
-                            break
-                        else :
-                            print("no")
-        
+                            self.importComments(jsonDir)
+        #                 else :
+        #                     print("no")
+        #             else :
+        #                 ("false")
 
     def getFilePath(self):
-        return cmds.file(q=True, sn=True).rpartition('/')
+        return cmds.file(q=True, sn=True).rpartition('/')        
+        
+
+    def reloadComments(self) :
+        print("findComments")
+        filePath = self.getFilePath()
+        mayaFilePath = pathlib.Path(filePath[0])
+        print(mayaFilePath)
+        mayaRoot = filePath[2].rpartition('.')
+        print(mayaRoot[0])
+        folderDir = pathlib.Path.joinpath(mayaFilePath, "Comments")
+        print(folderDir)
+        if folderDir.is_dir():
+            folderDir = pathlib.Path.joinpath(folderDir, mayaRoot[0])
+            print(folderDir)   
+            if folderDir.is_dir():
+                print("Folder exists")
+                files = os.listdir(folderDir)
+                print(files)
+                print(len(files))
+                for file in files:
+                    if file.endswith(".json"):
+                        jsonDir = pathlib.Path.joinpath(folderDir, file)
+                        self.importComments(jsonDir)
+            else:
+                error = QtWidgets.QMessageBox()
+                error.warning(self, "Warning", "No Comments found")
+                self.clearComments()
+        else:
+                error = QtWidgets.QMessageBox()
+                error.warning(self, "Warning", "No Comments found")
+                self.clearComments()
 
 
-    def importComments(self):
-        filePath = cmds.file(q=True, sn=True).rpartition('/')
-        fileName = QtWidgets.QFileDialog.getOpenFileName(self, "Select JSON file", filePath[0], "JSON File (*.json)")
-        if fileName[0] != "":
-            CommentTool.readJson(fileName[0])
-            self.displayText()
-            self.addBookmarkToImport()
+
+    def importComments(self, jsonDir):
+        print(jsonDir)
+        CommentTool.readJson(jsonDir)
+        self.displayText()
+        #maya keeps crashing because of that ->
+        #self.addBookmarkToImport()
 
 
     def clearComments(self) :
@@ -362,7 +396,6 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         process = QtCore.QProcess()
         # how to do that ???
         process.startDetached(f"/home/s5602665/PipTD/msccavepipelineandtdproject24-vanessa-stotz/src/dist/CommentToolExec/CommentToolExec")
-        
 
     #Maya specific functions
 
@@ -379,7 +412,7 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
 
     def addBookmarkToImport(self) :
         self.clearBookmarks()
-        self.scene  = CommentTool.getSceneDict()
+        self.scene  = CommentTool.getSceneData()
         
         for comments in self.scene['comments'] :
             print(comments['frame'])

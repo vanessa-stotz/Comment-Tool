@@ -53,14 +53,26 @@ class TestCommentTool(unittest.TestCase):
         #self.assertTrue(validate(instance=scene,schema=schema))
 
 
+    def test_clearComments(self):
 
+        CommentTool.addCommentsToScene(25, "TestFrame25")
+        CommentTool.addCommentsToScene(13,"TestFrame13")
+        sceneTest = CommentTool.getSceneData()
+
+        
+        self.assertEqual(2, len(sceneTest["comments"]))
+
+        CommentTool.clearComments()
+        sceneTest = CommentTool.getSceneData()
+
+        self.assertEqual(0, len(sceneTest["comments"]))
 
     def test_addAndSortComment(self):
 
         
         CommentTool.addComment(25, "TestFrame25")
         CommentTool.addComment(13,"TestFrame13")
-        sceneTest = CommentTool.getSceneDict()
+        sceneTest = CommentTool.getSceneData()
 
         #length of the comments should be 2 now
         self.assertEqual(2, len(sceneTest["comments"]))
@@ -74,7 +86,7 @@ class TestCommentTool(unittest.TestCase):
         #order should have changed after sorting the comments
         #so order is different
         CommentTool.sortComments()
-        sceneTest = CommentTool.getSceneDict()
+        sceneTest = CommentTool.getSceneData()
 
         #shouldn't be equal
         self.assertNotEqual(25, sceneTest["comments"][0]["frame"])
@@ -96,7 +108,7 @@ class TestCommentTool(unittest.TestCase):
 
         CommentTool.addCommentsToScene(25, "TestFrame25")
         CommentTool.addCommentsToScene(13,"TestFrame13")
-        sceneTest = CommentTool.getSceneDict()
+        sceneTest = CommentTool.getSceneData()
 
         #first test length of the comments
         self.assertEqual(2, len(sceneTest["comments"]))
@@ -110,28 +122,66 @@ class TestCommentTool(unittest.TestCase):
         CommentTool.clearComments()
 
 
-
-    def test_clearComments(self):
-
-        CommentTool.addCommentsToScene(25, "TestFrame25")
-        CommentTool.addCommentsToScene(13,"TestFrame13")
-        sceneTest = CommentTool.getSceneDict()
-
-        
-        self.assertEqual(2, len(sceneTest["comments"]))
-
-        CommentTool.clearComments()
-        sceneTest = CommentTool.getSceneDict()
-
-        self.assertEqual(0, len(sceneTest["comments"]))
-
-
     def test_overwriteComments(self):
-        ...
+        CommentTool.addCommentsToScene(4, "TestFrame4")
+        CommentTool.addCommentsToScene(5,"Test5")
+
+        sceneTest = CommentTool.getSceneData()
+
+        self.assertEqual(4, sceneTest["comments"][0]["frame"])
+        self.assertEqual("TestFrame4", sceneTest["comments"][0]["text"])
+        self.assertEqual(5, sceneTest["comments"][1]["frame"])
+        self.assertEqual("Test5", sceneTest["comments"][1]["text"])
+
+        newScene = {}
+        newScene["sceneName"] = "test02"
+        newScene["comments"] = [
+                                {
+                                    "frame" : 15,
+                                    "text" :"frame15"
+                                },
+                                {   "frame" : 30,
+                                    "text" : "frame30"
+                                }
+                                ]
+
+        CommentTool.overwriteComments(newScene)
+
+        sceneTest = CommentTool.getSceneData()
+        
+        #shouldn't be the same values as before
+        self.assertNotEqual(4, sceneTest["comments"][0]["frame"])
+        self.assertNotEqual("TestFrame4", sceneTest["comments"][0]["text"])
+        self.assertNotEqual(5, sceneTest["comments"][1]["frame"])
+        self.assertNotEqual("Test5", sceneTest["comments"][1]["text"])
+
+        #instead shoudl equal those values
+        self.assertEqual(15, sceneTest["comments"][0]["frame"])
+        self.assertEqual("frame15", sceneTest["comments"][0]["text"])
+        self.assertEqual(30, sceneTest["comments"][1]["frame"])
+        self.assertEqual("frame30", sceneTest["comments"][1]["text"])
+        
+
 
 
     def test_createFolder(self):
-        ...
+        pathFile = Path.cwd()
+        print(pathFile)
+        #pathDir = str(pathFile).rpartition('/')
+        folderDir = CommentTool.getFolderPath(pathFile)
+        self.assertTrue(folderDir.is_dir())
+    
+    def test_setSceneName(self):
+        name = "testShot"
+        CommentTool.setSceneName(name)
+        testScene = CommentTool.getSceneData()
+        self.assertEqual(name, testScene['sceneName'])
+
+        name = "test3"
+        CommentTool.setSceneName(name)
+        testScene = CommentTool.getSceneData()
+        self.assertNotEqual("testShot", testScene['sceneName'])
+
 
 
     def test_writeAndReadFile(self):
@@ -144,12 +194,13 @@ class TestCommentTool(unittest.TestCase):
 
         path = Path("testFile.json")
 
+
         # check if file exists
         self.assertTrue(path.is_file())
 
         #read Json File
         CommentTool.readJson("testFile.json")
-        sceneTest = CommentTool.getSceneDict()
+        sceneTest = CommentTool.getSceneData()
 
         #test if the values are correct
         self.assertEqual("testFile.json", sceneTest["sceneName"])
