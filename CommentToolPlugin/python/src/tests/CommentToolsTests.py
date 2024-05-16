@@ -49,7 +49,7 @@ class TestCommentTool(unittest.TestCase):
             schema = json.load(f)
         
         validate(instance=scene,schema=schema)
-        #print(validation)
+        print("validation")
         #self.assertTrue(validate(instance=scene,schema=schema))
 
 
@@ -165,10 +165,9 @@ class TestCommentTool(unittest.TestCase):
 
 
     def test_createFolder(self):
-        pathFile = Path.cwd()
-        print(pathFile)
-        #pathDir = str(pathFile).rpartition('/')
-        folderDir = CommentTool.getFolderPath(pathFile)
+        pathFile = Path(__file__).resolve()
+        pathDir = str(pathFile).rpartition('/')
+        folderDir = CommentTool.getFolderPath(pathDir)
         self.assertTrue(folderDir.is_dir())
     
     def test_setSceneName(self):
