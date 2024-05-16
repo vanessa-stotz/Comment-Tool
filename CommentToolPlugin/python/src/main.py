@@ -259,8 +259,11 @@ class CommentToolDialog(QtWidgets.QDialog):
             process.startDetached(f"/usr/bin/vlc {str(movPath)}")
         #start vlc from windows
         if operationSystem == "Windows":
+            print("Windows")
+            print(filePath)
+            pathlib.WindowsPath(filePath)
             process.setProgram("C:\\Program Files\\VideoLAN\\VLC\\vlc.exe")
-            process.setArguments(f"{filePath}")
+            process.setArguments([f"{filePath}"])
             process.startDetached()
 
 

@@ -37,6 +37,8 @@ def moveShelfScript(location, opSys) :
     locationShelfFile = pathlib.Path.joinpath(locationShelfFile, "shelves")
     path = pathlib.Path(locationShelfFile)
     
+    locationShelfFile.mkdir(exist_ok=True)
+
     if opSys == "Linux":
         command = f"cp {shelfFile} {locationShelfFile}"
         subprocess.run(command, shell=True)
