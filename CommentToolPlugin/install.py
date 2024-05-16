@@ -11,14 +11,13 @@ mayaLocations = {
 def installModules(mayaLoc, opSys):
    location = pathlib.Path(mayaLoc)
    createMod(location)
-   #moveShelfScript(location, opSys)
+   moveShelfScript(location, opSys)
         
 
 def createMod(location):
     currentDir = pathlib.Path.cwd()
-    print(currentDir)
     moduleDir = pathlib.Path.joinpath(location, "modules")
-    modulePath = pathlib.Path.joinpath(moduleDir, "test.mod")
+    modulePath = pathlib.Path.joinpath(moduleDir, "MayaCommentTool.mod")
 
     moduleDir.mkdir(exist_ok=True)
 
@@ -28,20 +27,23 @@ def createMod(location):
             file.write(f"+ <MayaEditor 1.0 {currentDir}\n")
             file.write("MAYA_PLUG_IN_PATH +:= plugins\n")
             file.write("PYTHONPATH +:= python")
+    print("module installed")
 
 def moveShelfScript(location, opSys) :
     currentDir = pathlib.Path.cwd()
-    print(f"Current Dir {currentDir}")
     shelfDir = pathlib.Path.joinpath(currentDir, "installScripts")
     shelfFile = pathlib.Path.joinpath(shelfDir, "shelf_CommentTool.mel")
-    print(shelfFile)
-    locationShelfFile = pathlib.Path.joinpath(location, "2023/prefs/shelves" )
-    locationShelfFile = pathlib.Path.joinpath(locationShelfFile, "shelf_CommentTool.mel")
-    print(locationShelfFile)
-    #if opSys == "Linux":
-    #    subprocess.run(f"cp {str(shelfFile)} {str(locationShelfFile)}")
-    # if opSys == 'Windows':
-    #     subprocess.run(f"copy {str(shelfFile)} {str(locationShelfFile)}")
+    locationShelfFile = pathlib.Path.joinpath(location, "2023/prefs" )
+    locationShelfFile = pathlib.Path.joinpath(locationShelfFile, "shelves")
+    path = pathlib.Path(locationShelfFile)
+    
+    if opSys == "Linux":
+        command = f"cp {shelfFile} {locationShelfFile}"
+        subprocess.run(command, shell=True)
+    if opSys == 'Windows':
+        command = f"copy {shelfFile} {locationShelfFile}"
+        subprocess.run(command)
+    print("shelf file copied")
 
 
 def checkMayaInstalled(opSys):

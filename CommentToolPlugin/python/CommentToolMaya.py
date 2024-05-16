@@ -64,7 +64,7 @@ class CommentToolDialog(MayaQWidgetDockableMixin, QtWidgets.QDialog):
         #run scripts to reload after opening a new File or new scene
         self.scriptJobs()
 
-
+    
 
     def scriptJobs(self):
         '''create jobs to either clear the comments when a new scene is opened
