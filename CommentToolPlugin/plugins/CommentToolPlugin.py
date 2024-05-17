@@ -1,3 +1,6 @@
+## This file is a modified version of Jon Maceys install.py script
+## script original: https://github.com/NCCA/MayaAPICode/blob/master/PythonPlugins/QtUI/installModule.py
+
 import maya.api.OpenMaya as om
 import maya.cmds as cmds
 import maya._OpenMayaUI as OpenMayaUI1

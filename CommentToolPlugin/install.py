@@ -1,3 +1,7 @@
+## This file is a modified version of Jon Maceys install.py script
+## script original: ClutterBasePlugin from the ClutterBaseLab
+
+
 import pathlib
 import platform
 import os

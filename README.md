@@ -89,4 +89,4 @@ You can now:
 
 Example files can be found in the **example/** folder
 
-
+The code was tested on a Linux and Windows machine
