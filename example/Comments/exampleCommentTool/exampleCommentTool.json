@@ -6,11 +6,11 @@
             "text": "Hello"
         },
         {
-            "frame": 30,
-            "text": "this is a test!!"
+            "frame": 33,
+            "text": "This is a test"
         },
         {
-            "frame": 43,
+            "frame": 45,
             "text": ":)"
         }
     ]
