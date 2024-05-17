@@ -23,7 +23,7 @@ def createMod(location):
     if not pathlib.Path(modulePath).is_file():
         print("writing module file")
         with open(modulePath, "w") as file:
-            file.write(f"+ <MayaEditor 1.0 {currentDir}\n")
+            file.write(f"+ MayaCommentTool 1.0 {currentDir}\n")
             file.write("MAYA_PLUG_IN_PATH +:= plugins\n")
             file.write("PYTHONPATH +:= python")
     print("module installed")
