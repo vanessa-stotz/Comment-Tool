@@ -27,7 +27,7 @@ open a new terminal and navigate to the **CommentToolPlugin/** folder and run **
 
 This creates the needed files to run the tool in Maya. \
 For the standalone program either run the **executable file** in **executable/** or open it with the terminal.  \
-Therefore navigate to **CommentToolPlugin/python/src** and run either 
+Therefore navigate to **CommentToolPlugin/python/** and run either 
 
 ![img_2.png](images%2Fimg_2.png)
 
@@ -44,7 +44,7 @@ Run **python install.py**:
 
 This creates the needed files to run the tool in Maya. \
 For the standalone program either run the **executable file** in **executable/** or open it with another command.  \
-Therefore navigate with the Explorer to **CommentToolPlugin\python\src** and open a new cmd window by typing cmd into the path. \
+Therefore navigate with the Explorer to **CommentToolPlugin\python** and open a new cmd window by typing cmd into the path. \
 Run **python CommentToolStandalone.py**
 
 ![img_8.png](images%2Fimg_8.png)

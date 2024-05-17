@@ -10,7 +10,7 @@ import os
 from shiboken2 import wrapInstance
 
 from PySide2 import QtWidgets, QtGui, QtCore
-import src.CommentTool as CommentTool
+import CommentTool
 
 
 def getMainWindow():
