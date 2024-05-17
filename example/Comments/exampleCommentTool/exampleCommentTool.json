@@ -1,0 +1,17 @@
+{
+    "sceneName": "exampleCommentTool",
+    "comments": [
+        {
+            "frame": 2,
+            "text": "Hello"
+        },
+        {
+            "frame": 30,
+            "text": "this is a test!!"
+        },
+        {
+            "frame": 43,
+            "text": ":)"
+        }
+    ]
+}

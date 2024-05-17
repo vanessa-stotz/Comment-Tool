@@ -19,21 +19,24 @@ comment_tool_dialog = None
 
 
 # gonna be called when we call doIt()
-def CommentToolUIScript(restore = False) :
+def CommentToolUIScript(restore=False):
     global comment_tool_dialog
     if restore == True:
         restored_control = OpenMayaUI1.MQtUtil.getCurrentParent()
-    if comment_tool_dialog is None :
+    if comment_tool_dialog is None:
         print("creating new UI")
         comment_tool_dialog = CommentToolDialog()
-        comment_tool_dialog.setObjectName('CommentToolDialog')
+        comment_tool_dialog.setObjectName("CommentToolDialog")
     if restore == True:
         mixin_ptr = OpenMayaUI1.MQtUtil.findControl(comment_tool_dialog.objectName())
         OpenMayaUI1.MQtUtil.addWidgetToMayaLayout(int(mixin_ptr), int(restored_control))
-    else :
-        comment_tool_dialog.show(dockable = True,width=800, height=800, 
-                                 uiScript='CommentToolUIScript(restore=True)')
-
+    else:
+        comment_tool_dialog.show(
+            dockable=True,
+            width=800,
+            height=800,
+            uiScript="CommentToolUIScript(restore=True)",
+        )
 
 
 class CommentTool(om.MPxCommand):
@@ -46,11 +49,13 @@ class CommentTool(om.MPxCommand):
     def doIt(self, args):
         ui = CommentToolUIScript()
         if ui is not None:
-            try :
-                cmds.workspaceControl("CommentToolDialogWorkspaceControl", e=True, restore=True)
-            except :
+            try:
+                cmds.workspaceControl(
+                    "CommentToolDialogWorkspaceControl", e=True, restore=True
+                )
+            except:
                 pass
-        return ui     
+        return ui
 
     @classmethod
     def creator(cls):

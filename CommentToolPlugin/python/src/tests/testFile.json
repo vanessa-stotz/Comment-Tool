@@ -1,5 +1,5 @@
 {
-    "sceneName": "testFile.json",
+    "sceneName": "test3",
     "comments": [
         {
             "frame": 4,
@@ -8,6 +8,14 @@
         {
             "frame": 5,
             "text": "Test5"
+        },
+        {
+            "frame": 15,
+            "text": "frame15"
+        },
+        {
+            "frame": 30,
+            "text": "frame30"
         }
     ]
 }
